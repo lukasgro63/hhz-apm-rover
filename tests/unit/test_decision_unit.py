@@ -1,15 +1,19 @@
 import pytest
-from src.decision_unit import should_save_image
+from src.decision_unit import DecisionUnit
 
 class TestDecisionUnit:
-    def test_should_save_image_high_confidence(self):
+    @pytest.fixture
+    def decision_unit(self):
+        return DecisionUnit()
+
+    def test_should_save_image_high_confidence(self, decision_unit):
         """Testet, ob die Entscheidung korrekt getroffen wird, wenn die Konfidenz hoch ist."""
-        assert should_save_image(0.9) == True
+        assert decision_unit.should_save_image(0.9) == True
 
-    def test_should_save_image_low_confidence(self):
+    def test_should_save_image_low_confidence(self, decision_unit):
         """Testet, ob die Entscheidung korrekt getroffen wird, wenn die Konfidenz niedrig ist."""
-        assert should_save_image(0.4) == False
+        assert decision_unit.should_save_image(0.4) == False
 
-    def test_should_save_image_boundary_condition(self):
+    def test_should_save_image_boundary_condition(self, decision_unit):
         """Testet die Grenzbedingung an der Entscheidungsschwelle."""
-        assert should_save_image(0.5) == True
+        assert decision_unit.should_save_image(0.5) == True

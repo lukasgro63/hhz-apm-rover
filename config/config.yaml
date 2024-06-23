@@ -1,0 +1,14 @@
+camera:
+  resolution: [640, 480]
+  framerate: 24
+
+model:
+  path: "model/model.tflite"
+
+storage:
+  directory: "images/"
+  save_threshold: 0.5
+
+transfer:
+  url: "http://example.com/upload"
+  enable: true

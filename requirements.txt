@@ -1,6 +1,7 @@
-picamera
 numpy
-tensorflow
 opencv-python
-pytest
+tensorflow
+tensorflow-lite
+picamera
 requests
+pytest

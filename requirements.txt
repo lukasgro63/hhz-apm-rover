@@ -1,0 +1,6 @@
+picamera
+numpy
+tensorflow
+opencv-python
+pytest
+requests

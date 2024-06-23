@@ -1,25 +1,33 @@
 import pytest
 import numpy as np
-from unittest.mock import Mock, patch
-from src.ml_model import load_model, predict
+from unittest.mock import patch, MagicMock
+from src.ml_model import MLModel
 
 class TestMLModel:
     @pytest.fixture
-    def mock_model(self):
-        with patch('src.ml_model.tf.lite.Interpreter') as mock:
-            mock.return_value.get_output_details.return_value = [{'index': 0}]
-            mock.return_value.tensor.return_value = lambda x: np.array([])
-            yield mock
+    def ml_model(self):
+        return MLModel()
 
-    def test_load_model(self, mock_model):
+    @pytest.mark.asyncio
+    async def test_load_model(self, ml_model):
         """Testet, ob das Modell korrekt geladen wird."""
-        model = load_model('model.tflite')
-        mock_model.assert_called_with('model.tflite')
+        with patch.object(ml_model, '_create_interpreter', autospec=True) as mock_create_interpreter:
+            mock_interpreter = MagicMock()
+            mock_create_interpreter.return_value = mock_interpreter
+            await ml_model.load_model('model/stone_detection_model.tflite')
+            mock_create_interpreter.assert_called_once_with('model/stone_detection_model.tflite')
+            assert ml_model.interpreter is not None
 
-    def test_predict(self, mock_model):
+    @pytest.mark.asyncio
+    async def test_predict(self, ml_model):
         """Testet die Vorhersagefunktionalität des ML-Modells."""
-        # Angenommen, predict erwartet ein vorverarbeitetes Bild und gibt Wahrscheinlichkeiten zurück
-        mock_model.return_value.invoke.return_value = None
-        mock_model.return_value.tensor.return_value = lambda x: np.array([[0.1, 0.9]])
-        prediction = predict(np.zeros((28, 28, 3)))
-        assert prediction == 0.9  # Angenommen, das Modell gibt die Wahrscheinlichkeit für Klasse 1 zurück
+        with patch.object(ml_model, '_create_interpreter', autospec=True) as mock_create_interpreter:
+            mock_interpreter = MagicMock()
+            mock_create_interpreter.return_value = mock_interpreter
+            await ml_model.load_model('model/stone_detection_model.tflite')
+            mock_interpreter.get_output_details.return_value = [{'index': 0}]
+            mock_interpreter.tensor.side_effect = lambda idx: np.zeros((1, 150, 150, 3)).astype(np.float32) / 255.0
+            mock_interpreter.get_tensor.return_value = np.array([[0.9]])
+
+            prediction = await ml_model.predict(np.zeros((150, 150, 3)))
+            assert prediction == 0.9  # Angenommen, das Modell gibt die Wahrscheinlichkeit für Klasse 1 zurück
